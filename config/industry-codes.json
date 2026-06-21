@@ -1,0 +1,27 @@
+{
+  "_note": "PHASE-0 SPIKE: confirm and lock the exact construction 營業項目 code set from the GCIS code table (https://gcis.nat.gov.tw/cod/browseAction.do?method=browse). Construction/engineering codes are in the E series (營造業) plus related trades. The entries below are a STARTER set to be verified — do not treat as final. This file drives the whole GCIS pull; actors read it, never hardcode codes.",
+  "_source": "資料來源：經濟部商業發展署 (GCIS)",
+  "codes": [
+    { "code": "E101", "desc": "土木工程業", "tradeCategory": "土木" },
+    { "code": "E102", "desc": "鋪面工程業", "tradeCategory": "土木" },
+    { "code": "E103", "desc": "船舶工程業", "tradeCategory": "土木" },
+    { "code": "E105", "desc": "管道工程業", "tradeCategory": "水電" },
+    { "code": "E106", "desc": "電路布設工程業", "tradeCategory": "水電" },
+    { "code": "E201", "desc": "建築工程業", "tradeCategory": "營造" },
+    { "code": "E202", "desc": "冷凍空調工程業", "tradeCategory": "機電" },
+    { "code": "E204", "desc": "機械安裝業", "tradeCategory": "機電" },
+    { "code": "E401", "desc": "電器安裝業", "tradeCategory": "水電" },
+    { "code": "E402", "desc": "電業", "tradeCategory": "水電" },
+    { "code": "E404", "desc": "電信工程業", "tradeCategory": "機電" },
+    { "code": "E501", "desc": "農林漁牧工程業", "tradeCategory": "土木" },
+    { "code": "E599", "desc": "其他工程業", "tradeCategory": "營造" },
+    { "code": "E601", "desc": "室內裝潢業", "tradeCategory": "裝修" },
+    { "code": "E603", "desc": "水管工程業", "tradeCategory": "水電" },
+    { "code": "E604", "desc": "油漆工程業", "tradeCategory": "裝修" },
+    { "code": "E605", "desc": "門窗安裝工程業", "tradeCategory": "裝修" },
+    { "code": "E606", "desc": "防水工程業", "tradeCategory": "防水" },
+    { "code": "E607", "desc": "鋼鐵結構工程業", "tradeCategory": "鋼構" },
+    { "code": "E608", "desc": "模板工程業", "tradeCategory": "模板" },
+    { "code": "E609", "desc": "其他建築工程業（含泥作、磚瓦）— 確認代碼", "tradeCategory": "泥作" }
+  ]
+}

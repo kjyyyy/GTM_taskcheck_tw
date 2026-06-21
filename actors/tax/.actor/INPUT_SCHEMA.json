@@ -1,0 +1,24 @@
+{
+  "title": "稅籍 ingest input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "csvUrl": {
+      "title": "稅籍 CSV URL",
+      "type": "string",
+      "description": "Bulk CSV download URL (data.gov.tw dataset 9400). Confirm in spike.",
+      "editor": "textfield"
+    },
+    "industryCodes": {
+      "title": "行業 codes",
+      "type": "array",
+      "editor": "stringList"
+    },
+    "counties": {
+      "title": "Counties",
+      "type": "array",
+      "editor": "stringList"
+    }
+  },
+  "required": []
+}

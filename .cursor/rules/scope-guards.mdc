@@ -1,0 +1,19 @@
+---
+description: Scope guards (the "do NOT" list) for the GTM pipeline — prevent over-building
+alwaysApply: true
+---
+
+# Scope Guards — Do NOT
+
+The real risk on this project is **over-building**. Hard-cap v1 at the spec's Definition of Done (§13). Unless the user explicitly overrides:
+
+- ❌ No CI/CD pipelines, no GitHub Actions, no Docker beyond Apify's template `Dockerfile`.
+- ❌ No database, ORM, or migration tooling — Airtable + Apify datasets are the store for v1.
+- ❌ No web framework, API server, or dashboard.
+- ❌ No Clay, no paid enrichment, no cold-email infra in v1 — deferred (§12).
+- ❌ No Nx/Turborepo/Lerna — plain **npm workspaces** only.
+- ❌ No test framework beyond a couple of plain unit tests for `merge.ts`/`matchConfidence` (`node --test`, no Jest).
+- ❌ Do not build a generic "scraper framework" or plugin system. Five concrete, copy-paste-similar actors is correct here.
+- ❌ No AWS / Trigger.dev / Vercel until a concrete trigger (data residency or scale) forces it (§3.2).
+
+If a request would cross one of these lines, flag the conflict and confirm before proceeding.

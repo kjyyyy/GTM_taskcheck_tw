@@ -1,0 +1,12 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/lib" },
+    { "path": "actors/gcis" },
+    { "path": "actors/pcc" },
+    { "path": "actors/gmaps" },
+    { "path": "actors/gonghui" },
+    { "path": "actors/tax" },
+    { "path": "actors/deliver" }
+  ]
+}

@@ -1,0 +1,21 @@
+---
+description: Merge + Airtable delivery rules (deliver step is the only writer)
+globs: packages/lib/src/{merge,airtable}.ts,actors/deliver/**/*.ts
+alwaysApply: false
+---
+
+# Merge & Delivery
+
+The `deliver` actor is the **only** thing that writes to Airtable. It reads source datasets, merges by 統編, filters to the qualified working set, then upserts.
+
+## Merge (§6.1)
+- Merge by `unifiedBusinessNo`. Exact match = same record.
+- Registry sources win on firmographics; contact sources win **only** on `contact.*`.
+- **Never overwrite `scoring.*`** or any human-owned field — those live in Airtable.
+- Contact rows without 統編 (gmaps/gonghui) resolve via `matchConfidence`: auto-merge only ≥ 0.85, else queue for manual confirm. A low-confidence match must never clobber a registry field.
+- Update `provenance.sources` and `lastRefreshed`; idempotent — re-running must not duplicate or clobber.
+
+## Airtable (§9, Appendix A.3)
+- Batch ≤ 10 records/request via `performUpsert` on `UnifiedBusinessNo`; sleep to stay under 5 req/sec per base.
+- Keep the working set ≤ 1,000 rows (free-tier cap) — push only qualified rows; raw stays in Apify datasets.
+- Write only firmographic/contact/signal fields. Exclude `Pain/Power/Will/Stage`; `Fit` is a formula field.

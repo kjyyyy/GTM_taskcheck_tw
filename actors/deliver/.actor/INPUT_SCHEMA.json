@@ -1,0 +1,26 @@
+{
+  "title": "Deliver input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "datasetIds": {
+      "title": "Source dataset IDs",
+      "type": "array",
+      "description": "Apify dataset IDs from the ingest actors (gcis, pcc, gmaps, gonghui, tax).",
+      "editor": "stringList"
+    },
+    "maxRecords": {
+      "title": "Max records to Airtable",
+      "type": "integer",
+      "description": "Cap on the working set pushed to Airtable (free-tier limit is 1,000).",
+      "default": 1000
+    },
+    "matchThreshold": {
+      "title": "Contact match threshold",
+      "type": "number",
+      "description": "Min matchConfidence to auto-merge a contact-only row (else manual confirm).",
+      "default": 0.85
+    }
+  },
+  "required": ["datasetIds"]
+}

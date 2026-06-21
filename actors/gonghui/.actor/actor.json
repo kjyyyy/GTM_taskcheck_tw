@@ -1,0 +1,9 @@
+{
+  "actorSpecification": 1,
+  "name": "ruizhu-gonghui",
+  "title": "睿築 — 公會 directory scraper",
+  "version": "0.0",
+  "buildTag": "latest",
+  "input": "./INPUT_SCHEMA.json",
+  "dockerfile": "../Dockerfile"
+}

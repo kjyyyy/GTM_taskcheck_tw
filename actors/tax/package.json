@@ -1,0 +1,14 @@
+{
+  "name": "@ruizhu/actor-tax",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node dist/main.js",
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "apify": "^3.2.0",
+    "@ruizhu/lib": "*"
+  }
+}

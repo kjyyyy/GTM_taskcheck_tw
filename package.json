@@ -1,0 +1,20 @@
+{
+  "name": "ruizhu-gtm-data-pipeline",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "actors/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc -p tsconfig.typecheck.json",
+    "test": "tsc -b && node --test \"packages/lib/dist/**/*.test.js\""
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "@types/node": "^20.0.0"
+  }
+}

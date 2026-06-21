@@ -1,0 +1,9 @@
+{
+  "actorSpecification": 1,
+  "name": "ruizhu-deliver",
+  "title": "睿築 — merge + upsert to Airtable",
+  "version": "0.0",
+  "buildTag": "latest",
+  "input": "./INPUT_SCHEMA.json",
+  "dockerfile": "../Dockerfile"
+}

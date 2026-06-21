@@ -1,0 +1,18 @@
+---
+description: Core conventions for the 睿築 GTM data pipeline (TS + Apify monorepo)
+alwaysApply: true
+---
+
+# Pipeline Conventions
+
+This is a pre-PMF, two-person data-ingestion pipeline. **Optimise for simplicity and correctness, not scale or extensibility.** Full spec: `ruizhu_gtm_data_pipeline_requirements.md` (§15).
+
+- **TypeScript strict**, ESM (`NodeNext`), Node ≥ 20. Relative imports use explicit `.js` extensions.
+- **`packages/lib/src/schema.ts` is the single source of truth** for the data shape. Every actor normalises raw rows into `PartialRecord` before pushing; no actor invents its own field names.
+- **`統一編號` (`unifiedBusinessNo`) is the primary key everywhere.** `id = ` + `` `tw-${unifiedBusinessNo}` ``.
+- One actor per source under `actors/<source>`; shared logic lives **only** in `packages/lib`. Actors must not import from each other.
+- Secrets come from **env vars** (`process.env`). Never hardcode tokens; never commit `.env`.
+- Every actor: paginate with backoff on HTTP 429, max 3 retries, structured logs, and a 0-row warning (silent-failure signal).
+- `config/industry-codes.json` and `config/counties.json` drive targeting — **no hardcoded codes/counties inside actors.**
+- Attribute government sources in comments and surfaced output: `資料來源：經濟部商業發展署 / 公共工程委員會`.
+- **Airtable is the only delivery target.** All writes go through `lib/airtable.ts`: batch ≤ 10 records/request, `performUpsert` keyed on `unifiedBusinessNo`, honour 5 req/sec per base, write **only** firmographic/contact/signal fields — never human-owned fields (`scoring.pain/power/will`, pipeline `Stage`). Fit score is an Airtable formula field, not written by code.

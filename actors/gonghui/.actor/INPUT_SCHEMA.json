@@ -1,0 +1,21 @@
+{
+  "title": "公會 scraper input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "startUrls": {
+      "title": "Association directory URLs",
+      "type": "array",
+      "description": "Member-list pages to parse (one parser per association layout).",
+      "editor": "stringList",
+      "prefill": ["https://www.treca.org.tw/"]
+    },
+    "contactEmail": {
+      "title": "Contact email (User-Agent)",
+      "type": "string",
+      "description": "Sent in the User-Agent so site owners can reach us (politeness).",
+      "editor": "textfield"
+    }
+  },
+  "required": []
+}

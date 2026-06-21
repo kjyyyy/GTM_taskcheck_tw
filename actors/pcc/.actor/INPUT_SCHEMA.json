@@ -1,0 +1,20 @@
+{
+  "title": "PCC ingest input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "sinceDays": {
+      "title": "Award window (days)",
+      "type": "integer",
+      "description": "Flag awards within this many days as a fresh recentTenderWin signal.",
+      "default": 90
+    },
+    "openDataUrl": {
+      "title": "PCC OpenData URL",
+      "type": "string",
+      "description": "Award (決標) OpenData endpoint (confirm in Phase-0 spike).",
+      "editor": "textfield"
+    }
+  },
+  "required": []
+}

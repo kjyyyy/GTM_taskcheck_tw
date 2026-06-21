@@ -1,0 +1,31 @@
+{
+  "_note": "Taiwan 縣市 reference list (22 直轄市/縣/市). Used by lib/address.ts to split 縣市/區 from a raw address, and by actors to drive per-county targeting (e.g. Google Maps search grids). Both 臺/台 spellings are included because addresses use them interchangeably.",
+  "counties": [
+    "臺北市",
+    "台北市",
+    "新北市",
+    "桃園市",
+    "臺中市",
+    "台中市",
+    "臺南市",
+    "台南市",
+    "高雄市",
+    "基隆市",
+    "新竹市",
+    "嘉義市",
+    "新竹縣",
+    "苗栗縣",
+    "彰化縣",
+    "南投縣",
+    "雲林縣",
+    "嘉義縣",
+    "屏東縣",
+    "宜蘭縣",
+    "花蓮縣",
+    "臺東縣",
+    "台東縣",
+    "澎湖縣",
+    "金門縣",
+    "連江縣"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "title": "GCIS ingest input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "itemCodes": {
+      "title": "營業項目代碼",
+      "type": "array",
+      "description": "Construction business-item codes to pull. Defaults to config/industry-codes.json.",
+      "editor": "stringList"
+    },
+    "apiBase": {
+      "title": "GCIS API base",
+      "type": "string",
+      "description": "Override the GCIS OpenData API base URL.",
+      "editor": "textfield"
+    },
+    "datasetUuid": {
+      "title": "GCIS dataset UUID",
+      "type": "string",
+      "description": "Query-by-business-item dataset UUID (confirm in Phase-0 spike).",
+      "editor": "textfield"
+    },
+    "maxRetries": {
+      "title": "Max retries",
+      "type": "integer",
+      "description": "Retry attempts on HTTP 429 / 5xx with exponential backoff.",
+      "default": 3
+    }
+  },
+  "required": []
+}

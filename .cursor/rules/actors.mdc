@@ -1,0 +1,17 @@
+---
+description: Conventions for Apify actors (one per data source)
+globs: actors/**/*.ts
+alwaysApply: false
+---
+
+# Actor Conventions
+
+Each actor ingests/scrapes ONE source and writes normalised rows to its own Apify dataset.
+
+- Entrypoint is `src/main.ts`; wrap work in `Actor.init()` … `Actor.exit()`.
+- Read typed inputs via `Actor.getInput<T>()`; declare them in `.actor/INPUT_SCHEMA.json`.
+- Normalise raw source rows into `PartialRecord` (from `@ruizhu/lib`) **before** `Actor.pushData`. Always set `source` and, for registry sources, `unifiedBusinessNo`.
+- Targeting comes from config passed as input (`itemCodes`, `counties`, `startUrls`) — never hardcode 營業項目 codes or county names.
+- Resilience: paginate, exponential backoff + retry (max 3) on HTTP 429/5xx, and `log.warning` when a source returns 0 rows.
+- Registry sources (`gcis`, `tax`, `pcc`) are authoritative for firmographics; contact sources (`gmaps`, `gonghui`) only for `contact.*`.
+- Government open-data APIs need no proxy; use Apify residential TW proxy only where anti-bot requires it (Google Maps). The `Dockerfile` is Apify's standard template — leave it as the default.
