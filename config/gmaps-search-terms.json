@@ -1,0 +1,17 @@
+{
+  "_note": "zh-TW Google Maps search terms for owner-operated construction subcontractor trades (beachhead ICP). Used by actors/gmaps as the default searchStringsArray. Keep terms distinct (avoid near-duplicates) — the Maps actor charges per place and duplicate-ish terms just slow runs without adding coverage (§5.5).",
+  "searchTerms": [
+    "水電工程",
+    "水電行",
+    "泥作工程",
+    "防水工程",
+    "鋼構工程",
+    "模板工程",
+    "土木包工業",
+    "油漆工程",
+    "室內裝修",
+    "拆除工程",
+    "機電工程",
+    "空調工程"
+  ]
+}

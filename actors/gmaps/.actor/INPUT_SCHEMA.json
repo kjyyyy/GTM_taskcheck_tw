@@ -4,21 +4,43 @@
   "schemaVersion": 1,
   "properties": {
     "searchTerms": {
-      "title": "Trade search terms",
+      "title": "Trade search terms (zh-TW)",
       "type": "array",
-      "description": "e.g. 水電工程, 泥作, 防水, 鋼構, 模板, 土木包工業.",
+      "description": "Passed to the Maps actor as searchStringsArray, e.g. 水電工程, 泥作工程, 防水工程, 鋼構工程, 模板工程, 土木包工業. Defaults to config/gmaps-search-terms.json.",
       "editor": "stringList"
     },
     "counties": {
       "title": "Counties",
       "type": "array",
-      "description": "縣市/區 to search across (rolling by county). Defaults to config/counties.json.",
+      "description": "縣市 to search across (one Maps run per county). Defaults to the canonical list from config/counties.json.",
       "editor": "stringList"
     },
     "maxPlacesPerSearch": {
-      "title": "Max places per search",
+      "title": "Max places per search term",
       "type": "integer",
-      "default": 100
+      "description": "maxCrawledPlacesPerSearch sent to the Maps actor. Keep low (50) for the spike.",
+      "default": 50,
+      "minimum": 1
+    },
+    "language": {
+      "title": "Maps result language",
+      "type": "string",
+      "description": "Language for Maps results.",
+      "default": "zh-TW",
+      "editor": "textfield"
+    },
+    "mapsActorId": {
+      "title": "Apify Maps actor",
+      "type": "string",
+      "description": "The maintained Google Maps Scraper actor to wrap.",
+      "default": "compass/crawler-google-places",
+      "editor": "textfield"
+    },
+    "useResidentialProxy": {
+      "title": "Use residential TW proxy",
+      "type": "boolean",
+      "description": "Route the Maps actor through Apify residential proxy in Taiwan (recommended for anti-bot).",
+      "default": true
     }
   },
   "required": []

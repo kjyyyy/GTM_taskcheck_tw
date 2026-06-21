@@ -6,6 +6,7 @@
     { "path": "actors/pcc" },
     { "path": "actors/gmaps" },
     { "path": "actors/gonghui" },
+    { "path": "actors/i104" },
     { "path": "actors/tax" },
     { "path": "actors/deliver" }
   ]

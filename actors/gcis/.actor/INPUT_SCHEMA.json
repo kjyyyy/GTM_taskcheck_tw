@@ -3,22 +3,51 @@
   "type": "object",
   "schemaVersion": 1,
   "properties": {
+    "mode": {
+      "title": "Ingest mode",
+      "type": "string",
+      "description": "taichung-csv (default): download a county open-data CSV. api: query-by-business-item (national scaling).",
+      "enum": ["taichung-csv", "api"],
+      "default": "taichung-csv"
+    },
+    "csvFileOid": {
+      "title": "CSV file oid (taichung-csv mode)",
+      "type": "string",
+      "description": "GCIS downloadable file oid. Defaults to the Taichung E營造及工程業 CSV from config/gcis-sources.json.",
+      "editor": "textfield"
+    },
+    "csvUrl": {
+      "title": "CSV URL override",
+      "type": "string",
+      "description": "Full CSV URL (overrides csvFileOid).",
+      "editor": "textfield"
+    },
+    "counties": {
+      "title": "County filter",
+      "type": "array",
+      "description": "Optional: keep only rows in these 縣市 (CSV may already be one county). 台/臺 normalised.",
+      "editor": "stringList"
+    },
+    "defaultTradeCategory": {
+      "title": "Default trade category",
+      "type": "string",
+      "description": "Trade bucket applied to all CSV rows (the county CSV is already one industry, e.g. 營造).",
+      "editor": "textfield"
+    },
     "itemCodes": {
-      "title": "營業項目代碼",
+      "title": "營業項目代碼 (api mode)",
       "type": "array",
       "description": "Construction business-item codes to pull. Defaults to config/industry-codes.json.",
       "editor": "stringList"
     },
     "apiBase": {
-      "title": "GCIS API base",
+      "title": "GCIS API base (api mode)",
       "type": "string",
-      "description": "Override the GCIS OpenData API base URL.",
       "editor": "textfield"
     },
     "datasetUuid": {
-      "title": "GCIS dataset UUID",
+      "title": "GCIS dataset UUID (api mode)",
       "type": "string",
-      "description": "Query-by-business-item dataset UUID (confirm in Phase-0 spike).",
       "editor": "textfield"
     },
     "maxRetries": {

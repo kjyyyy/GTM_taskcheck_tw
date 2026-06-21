@@ -17,11 +17,13 @@ function createEmpty(unifiedBusinessNo: string, now: string): CompanyRecord {
   return {
     id: makeId(unifiedBusinessNo),
     unifiedBusinessNo,
+    verified: unifiedBusinessNo !== '',
     companyName: '',
     responsiblePerson: null,
     companyStatus: null,
     isActive: false,
     capitalAmount: null,
+    employeeCount: null,
     addressRaw: null,
     county: null,
     district: null,
@@ -29,6 +31,11 @@ function createEmpty(unifiedBusinessNo: string, now: string): CompanyRecord {
     tradeCategory: null,
     contact: { phone: null, lineId: null, email: null, website: null },
     signals: { recentTenderWin: false, lastAwardDate: null, lastAwardAmount: null, hiringActive: false },
+    rating: null,
+    reviewCount: null,
+    mapsCategory: null,
+    mapsUrl: null,
+    placeId: null,
     scoring: { fit: null, pain: null, power: null, will: null, tier: null },
     provenance: { sources: [], sourceMatchConfidence: {}, firstSeen: now, lastRefreshed: now },
   };
@@ -84,6 +91,7 @@ export function mergeRecord(
     applyIfDefined(result, 'companyStatus', incoming.companyStatus);
     applyIfDefined(result, 'isActive', incoming.isActive);
     applyIfDefined(result, 'capitalAmount', incoming.capitalAmount);
+    applyIfDefined(result, 'employeeCount', incoming.employeeCount);
     applyIfDefined(result, 'addressRaw', incoming.addressRaw);
     applyIfDefined(result, 'county', incoming.county);
     applyIfDefined(result, 'district', incoming.district);
@@ -93,12 +101,21 @@ export function mergeRecord(
     }
   }
 
-  if (isContactSource(source) && incoming.contact) {
-    // Contact sources are authoritative ONLY for contact channels.
-    applyIfDefined(result.contact, 'phone', incoming.contact.phone);
-    applyIfDefined(result.contact, 'lineId', incoming.contact.lineId);
-    applyIfDefined(result.contact, 'email', incoming.contact.email);
-    applyIfDefined(result.contact, 'website', incoming.contact.website);
+  if (isContactSource(source)) {
+    // Contact sources are authoritative ONLY for contact channels...
+    if (incoming.contact) {
+      applyIfDefined(result.contact, 'phone', incoming.contact.phone);
+      applyIfDefined(result.contact, 'lineId', incoming.contact.lineId);
+      applyIfDefined(result.contact, 'email', incoming.contact.email);
+      applyIfDefined(result.contact, 'website', incoming.contact.website);
+    }
+    // ...plus Google Maps prioritization signals (rating/reviews/category/url/placeId),
+    // which attach to matched registry firms too — they are not firmographics.
+    applyIfDefined(result, 'rating', incoming.rating);
+    applyIfDefined(result, 'reviewCount', incoming.reviewCount);
+    applyIfDefined(result, 'mapsCategory', incoming.mapsCategory);
+    applyIfDefined(result, 'mapsUrl', incoming.mapsUrl);
+    applyIfDefined(result, 'placeId', incoming.placeId);
   }
 
   // Intent signals come from registry sources (mainly PCC). Merge any provided fields.
@@ -117,6 +134,51 @@ export function mergeRecord(
   result.provenance.lastRefreshed = now;
 
   return result;
+}
+
+/**
+ * Build a contact-only record for a Maps/公會 row that did NOT match any registry firm.
+ *
+ * These leads have no 統一編號, so they get a synthetic stable id (`gm-<placeId>`, falling back
+ * to `gm-<phone digits>`) used as the Airtable merge key, and `verified: false`. The decision
+ * maker (負責人) is unknown — you call the listed business line. Throws if there is neither a
+ * placeId nor a phone (nothing stable to key on, and nothing to call).
+ */
+export function buildStandaloneLead(incoming: PartialRecord, now: string = todayIso()): CompanyRecord {
+  const phoneDigits = normalisePhone(incoming.contact?.phone);
+  const key = incoming.placeId ? `gm-${incoming.placeId}` : phoneDigits ? `gm-${phoneDigits}` : null;
+  if (!key) {
+    throw new Error('buildStandaloneLead: need a placeId or phone to key an unmatched lead');
+  }
+  const base = createEmpty('', now);
+  return {
+    ...base,
+    id: key,
+    verified: false,
+    companyName: incoming.companyName ?? '',
+    county: incoming.county ?? null,
+    district: incoming.district ?? null,
+    addressRaw: incoming.addressRaw ?? null,
+    tradeCategory: incoming.tradeCategory ?? null,
+    contact: {
+      phone: incoming.contact?.phone ?? null,
+      lineId: incoming.contact?.lineId ?? null,
+      email: incoming.contact?.email ?? null,
+      website: incoming.contact?.website ?? null,
+    },
+    rating: incoming.rating ?? null,
+    reviewCount: incoming.reviewCount ?? null,
+    mapsCategory: incoming.mapsCategory ?? null,
+    mapsUrl: incoming.mapsUrl ?? null,
+    placeId: incoming.placeId ?? null,
+    isActive: true,
+    provenance: {
+      sources: incoming.source ? [incoming.source] : [],
+      sourceMatchConfidence: {},
+      firstSeen: now,
+      lastRefreshed: now,
+    },
+  };
 }
 
 const COMPANY_SUFFIXES = /(股份)?有限公司|企業社|工程行|工作室|商行|行$|公司|company|co\.?,?\s*ltd\.?/giu;
@@ -171,10 +233,12 @@ export function matchConfidence(candidate: PartialRecord, target: CompanyRecord)
     ? stringSimilarity(normaliseName(candidate.companyName), normaliseName(target.companyName))
     : 0;
 
+  // Canonicalise 台/臺 so e.g. "台中市" (公會) matches "臺中市" (registry CSV).
+  const canon = (s: string | null | undefined): string => (s ?? '').replace(/台/g, '臺');
   let geoScore = 0;
   if (candidate.county && target.county) {
-    geoScore = candidate.county === target.county ? 0.5 : 0;
-    if (candidate.district && target.district && candidate.district === target.district) {
+    geoScore = canon(candidate.county) === canon(target.county) ? 0.5 : 0;
+    if (candidate.district && target.district && canon(candidate.district) === canon(target.district)) {
       geoScore = 1;
     }
   }

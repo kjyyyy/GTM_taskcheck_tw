@@ -1,0 +1,13 @@
+{
+  "_note": "County open-data CSVs from the GCIS 商工行政資料開放平臺 (data.gcis.nat.gov.tw). Each `fileOid` is the downloadable file's oid (NOT the dataset detail oid); download via https://data.gcis.nat.gov.tw/od/file?oid=<fileOid>. These bulk CSVs carry 統編/名稱/地址/資本總額/行業代號 but NOT 負責人 — the deliver step backfills 負責人 + active status per-統編 via the GCIS company-basic API (companyApiOid). Updated monthly. 資料來源：經濟部商業發展署.",
+  "companyApiOid": "5F64D864-61CB-4D0D-8AD9-492047CC1EA6",
+  "sources": {
+    "taichungConstruction": {
+      "label": "台中市公司登記資料-E營造及工程業",
+      "county": "臺中市",
+      "datasetOid": "248D0114-EF47-4910-8A72-77078FEF3D8D",
+      "fileOid": "37EE81A7-2B21-49D5-B45F-5914C395C254",
+      "approxRows": 22000
+    }
+  }
+}

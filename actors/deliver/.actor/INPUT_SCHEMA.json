@@ -20,6 +20,37 @@
       "type": "number",
       "description": "Min matchConfidence to auto-merge a contact-only row (else manual confirm).",
       "default": 0.85
+    },
+    "counties": {
+      "title": "County focus",
+      "type": "array",
+      "description": "Limit the Airtable working set to these 縣市 (e.g. [\"臺中市\"]). Empty = nationwide. 台/臺 variants are normalised.",
+      "editor": "stringList"
+    },
+    "maxEmployees": {
+      "title": "ICP size ceiling (employees)",
+      "type": "integer",
+      "description": "Drop firms whose headcount is KNOWN and above this (owner-operated ICP). Unknown-size firms are kept. Suggested 30; sweet spot <=10.",
+      "minimum": 1
+    },
+    "enrichDecisionMaker": {
+      "title": "Backfill 負責人 + status",
+      "type": "boolean",
+      "description": "For the working set, fetch 負責人 (decision maker) + active status per-統編 from the GCIS company-basic API (bounded to the capped set).",
+      "default": true
+    },
+    "gcisCompanyApiOid": {
+      "title": "GCIS company-basic API oid",
+      "type": "string",
+      "description": "OpenData dataset oid for per-統編 company-basic lookup (returns Responsible_Name + Company_Status_Desc).",
+      "default": "5F64D864-61CB-4D0D-8AD9-492047CC1EA6",
+      "editor": "textfield"
+    },
+    "keepUnmatchedLeads": {
+      "title": "Keep unmatched Maps leads",
+      "type": "boolean",
+      "description": "Persist phone-bearing Maps/公會 rows that matched no registry firm as standalone unverified leads (keyed by placeId/phone), filling capacity left under the cap.",
+      "default": true
     }
   },
   "required": ["datasetIds"]

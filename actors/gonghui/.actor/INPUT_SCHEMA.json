@@ -4,11 +4,10 @@
   "schemaVersion": 1,
   "properties": {
     "startUrls": {
-      "title": "Association directory URLs",
+      "title": "Association directory URLs (override)",
       "type": "array",
-      "description": "Member-list pages to parse (one parser per association layout).",
-      "editor": "stringList",
-      "prefill": ["https://www.treca.org.tw/"]
+      "description": "Override: crawl only these URLs (each uses its host's parser from config/gonghui-sites.json). Empty = crawl every configured site.",
+      "editor": "stringList"
     },
     "contactEmail": {
       "title": "Contact email (User-Agent)",

@@ -19,32 +19,49 @@ function getBase(): Airtable.Base {
 function toFields(r: CompanyRecord): Record<string, unknown> {
   return {
     UnifiedBusinessNo: r.unifiedBusinessNo,
+    // LeadKey is the merge key for standalone (no-統編) Maps leads; blank for registry firms.
+    LeadKey: r.unifiedBusinessNo === '' ? r.id : '',
+    Verified: r.verified,
     CompanyName: r.companyName,
     ResponsiblePerson: r.responsiblePerson,
     County: r.county,
     District: r.district,
+    CapitalAmount: r.capitalAmount,
+    EmployeeCount: r.employeeCount,
     Phone: r.contact.phone,
     Email: r.contact.email,
     Website: r.contact.website,
     TradeCategory: r.tradeCategory,
+    Rating: r.rating,
+    ReviewsCount: r.reviewCount,
+    MapsCategory: r.mapsCategory,
+    MapsUrl: r.mapsUrl,
     RecentTenderWin: r.signals.recentTenderWin,
     LastAwardDate: r.signals.lastAwardDate,
     LastRefreshed: r.provenance.lastRefreshed,
   };
 }
 
-/**
- * Upsert in batches of 10, matching on UnifiedBusinessNo (Airtable performUpsert).
- * Sleeps between batches to stay under the 5 req/sec per-base limit.
- */
-export async function upsertCompanies(records: CompanyRecord[]): Promise<void> {
-  const base = getBase();
+async function upsertBatch(base: Airtable.Base, records: CompanyRecord[], mergeOn: string): Promise<void> {
   for (let i = 0; i < records.length; i += 10) {
     const batch = records.slice(i, i + 10).map((r) => ({ fields: toFields(r) }));
     await base(TABLE).update(batch as never, {
-      performUpsert: { fieldsToMergeOn: ['UnifiedBusinessNo'] },
+      performUpsert: { fieldsToMergeOn: [mergeOn] },
       typecast: true,
     } as never);
     await new Promise((res) => setTimeout(res, 250)); // stay under 5 req/s per base
   }
+}
+
+/**
+ * Upsert in batches of 10 (Airtable performUpsert). Two passes so neither key collides:
+ *  - registry firms (have 統編)  -> merge on UnifiedBusinessNo
+ *  - standalone Maps leads (no 統編) -> merge on LeadKey (gm-<placeId|phone>)
+ */
+export async function upsertCompanies(records: CompanyRecord[]): Promise<void> {
+  const base = getBase();
+  const registry = records.filter((r) => r.unifiedBusinessNo !== '');
+  const leads = records.filter((r) => r.unifiedBusinessNo === '');
+  if (registry.length) await upsertBatch(base, registry, 'UnifiedBusinessNo');
+  if (leads.length) await upsertBatch(base, leads, 'LeadKey');
 }

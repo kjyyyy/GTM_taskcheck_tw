@@ -3,9 +3,16 @@ export interface ParsedAddress {
   district: string | null; // 區 / 鄉 / 鎮 / 縣轄市
 }
 
-/** Strip a leading postal code (3 or 3+3 digits) and surrounding whitespace. */
-function stripPostalCode(addressRaw: string): string {
-  return addressRaw.replace(/^\s*\d{3}(?:-?\d{2,3})?\s*/, '').trim();
+/**
+ * Strip a leading postal code (3 or 3+2/3 digits) and a leading country prefix.
+ * Taiwan addresses from Google Maps look like `334台灣桃園市八德區…` — i.e. postal code,
+ * then 台灣/臺灣 (or 中華民國), then the 縣市. Both must be removed before matching a county.
+ */
+function stripLeadingNoise(addressRaw: string): string {
+  return addressRaw
+    .replace(/^\s*\d{3}(?:-?\d{2,3})?\s*/, '')
+    .replace(/^(中華民國|台灣|臺灣|台湾)\s*/, '')
+    .trim();
 }
 
 /**
@@ -21,7 +28,7 @@ export function parseAddress(
 ): ParsedAddress {
   if (!addressRaw) return { county: null, district: null };
 
-  const cleaned = stripPostalCode(addressRaw);
+  const cleaned = stripLeadingNoise(addressRaw);
 
   // Longest county name first so "臺中市" wins over a bare "市" style false match.
   const sorted = [...counties].sort((a, b) => b.length - a.length);

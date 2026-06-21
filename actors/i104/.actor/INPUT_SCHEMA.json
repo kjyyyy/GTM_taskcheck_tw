@@ -1,0 +1,40 @@
+{
+  "title": "104 ingest input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "indcat": {
+      "title": "104 industry categories (indcat)",
+      "type": "string",
+      "description": "Comma-separated 104 industry category codes (construction set by default).",
+      "default": "1011001000,1011002000,1011003000",
+      "editor": "textfield"
+    },
+    "keyword": {
+      "title": "Keyword",
+      "type": "string",
+      "description": "Company-search keyword, e.g. 承包商.",
+      "default": "承包商",
+      "editor": "textfield"
+    },
+    "counties": {
+      "title": "County focus",
+      "type": "array",
+      "description": "Emit only firms whose address is in these 縣市 (e.g. [\"臺中市\"]). Empty = all.",
+      "editor": "stringList"
+    },
+    "maxCompanies": {
+      "title": "Max companies",
+      "type": "integer",
+      "description": "Hard cap on company profiles opened (keep low — ToS-restricted source).",
+      "default": 200,
+      "minimum": 1
+    },
+    "useResidentialProxy": {
+      "title": "Use residential TW proxy",
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": []
+}

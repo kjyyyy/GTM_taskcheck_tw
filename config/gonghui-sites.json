@@ -1,0 +1,18 @@
+{
+  "_note": "Per-site parsers for 公會 (trade-association) member directories — one entry per association layout (no generic framework, per scope guard), selected by hostname. Only CONFIRMED, public, server-rendered member lists belong here. Add more Taichung associations after confirming each has a public (non-login, non-JS) member table. Sites dropped during confirmation: tacet.org.tw/list.html (login-gated).",
+  "_attribution": "資料來源：各地營造/水電/土木公會公開會員名錄",
+  "sites": [
+    {
+      "name": "臺灣區綜合營造業同業公會臺中市辦事處",
+      "county": "臺中市",
+      "startUrls": ["http://treca3168.com/edcontent_d.php?id=93&lang=tw&tb=7"],
+      "rowSelector": "table tr",
+      "numericFirstCell": true,
+      "nameSelector": "td:nth-child(3)",
+      "responsiblePersonSelector": "td:nth-child(2)",
+      "phoneSelector": "td:nth-child(6)",
+      "addressSelector": "td:nth-child(7)",
+      "emailSelector": "a[href^=\"mailto:\"]"
+    }
+  ]
+}
