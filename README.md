@@ -241,8 +241,10 @@ does not use cold email/LinkedIn). Work it out of the Airtable Kanban.
    - If voicemail/gatekeeper: send the same intro on **LINE** (add via phone number) and retry once.
 3. **Move the Stage** as you go: Sourced → **Contacted** (any first touch) → **Diagnostic** (agreed to
    the 15-min call) → **現況地圖** (delivered the map) → **Design partner** (committed to build).
-4. **Log every outcome on the record:** set `Pain`/`Power`/`Will` (0–3 each) after the conversation,
-   add notes, and set `LostReason` if it dies (e.g. 已有系統 / 沒空 / 規模太大 / 找不到人).
+4. **Log every outcome on the record** (see *Outreach tracking* below): set `LastContactedDate`,
+   `ContactChannel` (Phone/LINE), bump `Attempts`, pick a `Disposition` (接通-有興趣 / 未接 / 守門員 …),
+   set `NextFollowUpDate` for any callback, and append to `Notes`. After a real conversation also set
+   `Pain`/`Power`/`Will` (0–3 each), and `LostReason` if it dies (e.g. 已有系統 / 沒空 / 規模太大 / 找不到人).
 5. **Read the funnel weekly** from Stage counts: **hit rate** = Contacted→Diagnostic,
    **win rate** = Diagnostic→Design partner. Feed it back into sourcing — if a profile converts
    (e.g. no-website + ≤10 staff + tender win), bump its weight in the `Fit` formula and pull more.
@@ -250,6 +252,82 @@ does not use cold email/LinkedIn). Work it out of the Airtable Kanban.
 **Compliance (個資法):** we only use **published business** contact info (company registry, public
 公會 rosters, Google Maps business listings) for a **business** offer; honor any opt-out immediately
 and don't message personal/residential numbers.
+
+### Outreach tracking (Airtable as CRM)
+
+Airtable *is* the CRM — every touch is logged inline on the company row (created by
+`scripts/airtable-setup.mjs`, never written by the pipeline, so a refresh never clobbers your notes):
+
+| Field | Use |
+|---|---|
+| `LastContactedDate` | date of the most recent touch |
+| `NextFollowUpDate` | when to call back (drives the follow-up view) |
+| `ContactChannel` | Phone / LINE / In-person / Other |
+| `Attempts` | running count of touches |
+| `Disposition` | outcome: 接通-有興趣 / 接通-暫不需要 / 接通-不適合 / 未接 / 守門員 / 約回電 / 婉拒勿擾 |
+| `Owner` | who is working the lead (2-person team) |
+| `Notes` | running free-text log |
+| `FollowUpDue` | formula: `1` when `NextFollowUpDate` is today or overdue |
+
+Two views to add manually (the API can't create views):
+
+- **Today's call list** — filter `LastContactedDate` is empty **OR** `FollowUpDue = 1`, and `Stage` is
+  not `Design partner`; sort by `Fit` desc. This is your daily queue.
+- **Follow-ups due** — filter `FollowUpDue = 1`; sort by `NextFollowUpDate`.
+
+Daily SOP: work *Today's call list* top-down; after each call set `LastContactedDate` +
+`ContactChannel`, bump `Attempts`, set `Disposition`, and either advance `Stage` or set
+`NextFollowUpDate`; weekly, read hit/win-rate from the `Stage` counts and tune sourcing.
+
+### CRM tooling verdict
+
+Tool choice follows the **channel**, and ours is **phone + personal LINE** to owner-operated firms that
+often have no website/email (recall "no website" is a `+2` Fit signal). So Airtable stays the single
+source of truth — lead + `Fit` + flywheel + call log, free, no per-seat fees, no double entry.
+
+Tools evaluated and skipped (channel mismatch, not quality):
+
+- **lemlist** — email/LinkedIn cold-sequence tool (deliverability, inbox warmup, drip sequences). Few
+  addresses to sequence here, and it can't dial a phone or touch LINE. Paying for an empty pipe.
+- **Close.com** — the one phone-native option (built-in dialer + SMS), but US-centric (weak for TW
+  numbers), ~US$99/seat/mo, and no LINE. Worth knowing it exists; not worth buying.
+- **Folk / Attio** — slick modern CRMs, but email/LinkedIn-centric, per-seat, no dialer or LINE. Neat
+  UI, wrong motion.
+- **HubSpot / Zoho / Pipedrive / the "Zero" CRMs** — email/pipeline-centric, heavier, double data-entry
+  for a 2-person team on a channel this ICP doesn't use.
+
+**Defer** a Taiwan LINE CRM until you have a repeatable broadcast message and volume — when that day
+comes, RallyLine (~NT$499/mo) is the cheap entry point, with BotBonnie/Super8 mid-tier and
+漸強 (MAAC) / Omnichat the heavier, annual-contract options. Manual personal-LINE + Airtable first.
+
+### Analytics & tracking
+
+How a touch is captured depends on the channel — there is no tool that silently tracks personal-LINE
+or phone for you:
+
+| Channel | Tracking | Why |
+|---|---|---|
+| **Phone** | **Manual** — log `Disposition` + bump `Attempts` | a call has no open/reply signal |
+| **Personal LINE** (your own app) | **Manual** — log per touch | personal LINE accounts have **no API**; 已讀 isn't exportable |
+| **LINE Official Account** | **Semi-auto** — webhook for inbound replies + broadcast delivered/click stats | OA can only message users who **added you** (opt-in), so it nurtures, it doesn't cold-open |
+| **Email** | **Auto** — opens / clicks / replies / bounces | standard, but a minority channel here (most leads have no email by design) |
+
+So for the channels you'll actually use (phone + personal LINE), **manual updates in Airtable are the
+system** — appropriate at 2 people. Read the funnel **inside Airtable**, no extra tools, using the 0/1
+helper fields (`Touched`, `Connected`, `Interested`, `Won`, created by `scripts/airtable-setup.mjs`):
+
+- **Rates from the summary bar:** in any grid, set a 0/1 column's summary to **Average** — the average
+  of a 0/1 field *is* that rate (avg of `Connected` = connect rate; avg of `Won` = win rate). **Sum** =
+  the raw count.
+- **Change the denominator with a filter:** filter the view to `Connected = 1`, then the **Average of
+  `Interested`** is interest-rate-among-connected (not among all leads).
+- **Counts by stage/outcome:** group a grid by `Stage` (Sourced → … → Design partner) and by
+  `Disposition` to see counts per group in the summary bar — that's your funnel.
+- Hide these four helper fields in day-to-day call views to cut clutter; they're for the weekly read.
+
+**When to automate later** (same trigger as paid tooling): wire **email** reply/open webhooks → Airtable
+once email volume is non-trivial, and a **LINE OA** inbound webhook → Airtable once you have an OA, an
+opted-in audience, and a repeatable broadcast. Until then, manual capture is enough.
 
 ---
 

@@ -50,6 +50,21 @@ const FIT_FORMULA =
   ' + IF({Verified}, 1, 0)' +
   ' + IF(AND({Rating} >= 4.5, {ReviewsCount} >= 5), 1, 0)';
 
+// 1 when a follow-up is due today or overdue (drives the "Follow-ups due" view). Recomputes daily.
+// "Today" is anchored to Asia/Taipei (the ICP's clock) — not GMT, which Airtable's TODAY() uses and
+// which would flip the same-day case near the UTC midnight boundary. Both sides land on midnight-UTC
+// of their respective calendar date, so the day-granularity comparison is exact.
+const TAIPEI_TODAY = "DATETIME_PARSE(DATETIME_FORMAT(SET_TIMEZONE(NOW(), 'Asia/Taipei'), 'YYYY-MM-DD'), 'YYYY-MM-DD')";
+const FOLLOWUP_DUE_FORMULA = `IF(AND({NextFollowUpDate}, NOT(IS_AFTER({NextFollowUpDate}, ${TAIPEI_TODAY}))), 1, 0)`;
+
+// Funnel metric helpers (0/1). The grid summary bar's AVERAGE of a 0/1 column = that rate
+// (e.g. avg of Connected = connect rate); SUM = the count. Filtering the view changes the
+// denominator (filter Connected = 1, then avg of Interested = interest-rate-among-connected).
+const TOUCHED_FORMULA = 'IF({Attempts}, 1, 0)';
+const CONNECTED_FORMULA = 'IF(FIND("接通", {Disposition} & ""), 1, 0)'; // any 接通-* disposition
+const INTERESTED_FORMULA = 'IF({Disposition} = "接通-有興趣", 1, 0)';
+const WON_FORMULA = 'IF({Stage} = "Design partner", 1, 0)';
+
 // First field is the table's primary field; CompanyName is the friendliest primary.
 const fields = [
   { name: 'CompanyName', type: 'singleLineText' },
@@ -86,8 +101,32 @@ const fields = [
   { name: 'Tier', type: 'singleSelect', options: { choices: [{ name: 'A' }, { name: 'B' }, { name: 'C' }] } },
   { name: 'Stage', type: 'singleSelect', options: { choices: STAGE_CHOICES.map((name) => ({ name })) } },
   { name: 'LostReason', type: 'singleLineText' },
-  // Formula — added LAST (references fields above). API supports creating formula fields.
+  // Outreach tracking (human-owned — logged per call/LINE touch):
+  { name: 'LastContactedDate', type: 'date', options: { dateFormat: { name: 'iso' } } },
+  { name: 'NextFollowUpDate', type: 'date', options: { dateFormat: { name: 'iso' } } },
+  {
+    name: 'ContactChannel',
+    type: 'singleSelect',
+    options: { choices: ['Phone', 'LINE', 'In-person', 'Other'].map((name) => ({ name })) },
+  },
+  { name: 'Attempts', type: 'number', options: { precision: 0 } },
+  {
+    name: 'Disposition',
+    type: 'singleSelect',
+    options: {
+      choices: ['接通-有興趣', '接通-暫不需要', '接通-不適合', '未接', '守門員', '約回電', '婉拒勿擾'].map((name) => ({ name })),
+    },
+  },
+  { name: 'Owner', type: 'singleLineText' },
+  { name: 'Notes', type: 'multilineText' },
+  // Formula fields — added LAST (reference fields above). API supports creating formula fields.
   { name: 'Fit', type: 'formula', options: { formula: FIT_FORMULA } },
+  { name: 'FollowUpDue', type: 'formula', options: { formula: FOLLOWUP_DUE_FORMULA } },
+  // Funnel metric helpers (0/1) — read rates off the summary bar's Average. Hide in call views.
+  { name: 'Touched', type: 'formula', options: { formula: TOUCHED_FORMULA } },
+  { name: 'Connected', type: 'formula', options: { formula: CONNECTED_FORMULA } },
+  { name: 'Interested', type: 'formula', options: { formula: INTERESTED_FORMULA } },
+  { name: 'Won', type: 'formula', options: { formula: WON_FORMULA } },
 ];
 
 async function api(path, init) {
@@ -103,8 +142,10 @@ async function api(path, init) {
 const { tables } = await api('/tables', { method: 'GET' });
 const existing = tables.find((t) => t.name === tableName);
 
+const formulaFields = fields.filter((f) => f.type === 'formula');
+
 if (!existing) {
-  // Fresh table: create without the formula, then add Fit so its references resolve.
+  // Fresh table: create without formulas, then add each formula so its references resolve.
   const created = await api('/tables', {
     method: 'POST',
     body: JSON.stringify({
@@ -113,8 +154,11 @@ if (!existing) {
       fields: fields.filter((f) => f.type !== 'formula'),
     }),
   });
-  await api(`/tables/${created.id}/fields`, { method: 'POST', body: JSON.stringify({ name: 'Fit', type: 'formula', options: { formula: FIT_FORMULA } }) });
-  console.log(`Created table "${created.name}" (${created.id}) with ${created.fields.length + 1} fields.`);
+  for (const f of formulaFields) {
+    await api(`/tables/${created.id}/fields`, { method: 'POST', body: JSON.stringify(f) });
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  console.log(`Created table "${created.name}" (${created.id}) with ${created.fields.length + formulaFields.length} fields.`);
 } else {
   const have = new Map(existing.fields.map((f) => [f.name, f]));
   const missing = fields.filter((f) => !have.has(f.name));
@@ -128,12 +172,15 @@ if (!existing) {
       ? `Updated table "${tableName}" (${existing.id}); added ${missing.length} field(s).`
       : `Table "${tableName}" already has all ${fields.length} fields.`,
   );
-  // Keep the Fit formula in sync. The Meta API CAN patch a formula's options; Airtable stores the
+  // Keep formula fields in sync. The Meta API CAN patch a formula's options; Airtable stores the
   // expression in field-ID form (not names), so we can't reliably diff it — just re-apply (idempotent).
-  const fit = have.get('Fit');
-  if (fit) {
-    await api(`/tables/${existing.id}/fields/${fit.id}`, { method: 'PATCH', body: JSON.stringify({ options: { formula: FIT_FORMULA } }) });
-    console.log('~ ensured "Fit" formula matches the canonical scoring expression.');
+  for (const f of formulaFields) {
+    const live = have.get(f.name);
+    if (live) {
+      await api(`/tables/${existing.id}/fields/${live.id}`, { method: 'PATCH', body: JSON.stringify({ options: f.options }) });
+      console.log(`~ ensured "${f.name}" formula matches the canonical expression.`);
+      await new Promise((r) => setTimeout(r, 250));
+    }
   }
 }
 
